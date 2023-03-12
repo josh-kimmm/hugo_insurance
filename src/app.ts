@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
+import db from "./db";
 
 dotenv.config();
 
@@ -12,5 +13,7 @@ app.listen(port, () => {
 
 
 app.get('/', (req: Request, res: Response) => {
+  
+  
   res.send('Express + TypeScript Server yayssyss');
 });
