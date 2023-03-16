@@ -1,46 +1,112 @@
 import { 
-  Model,
-  ModelDefined,
+  Association, 
+  CreationOptional, 
+  DataTypes, 
+  HasManyHasAssociationMixin, 
   InferAttributes, 
   InferCreationAttributes, 
-  CreationOptional, 
-  Optional,
-  DataTypes } from 'sequelize';
+  Model, 
+  HasManyHasAssociationsMixin,
+  NonAttribute,
+} from 'sequelize';
+import type { Models } from '.';
+
 import { sequelize } from '../config';
+import type { Address } from './address';
+import type { Vehicle } from './vehicle';
+class User extends 
+  Model<
+    InferAttributes<User, { omit: 'address' | 'vehicles' }>, 
+    InferCreationAttributes<User, { omit: 'address' | 'vehicles' }>
+  >
+{
+  declare id: CreationOptional<number>;
+  declare email: string;
+  declare first_name: CreationOptional<string>;
+  declare last_name: CreationOptional<string>;
+  declare dob: CreationOptional<string>;
+  declare session_id: string;
 
-// class UserType extends Model<InferAttributes<UserType>, InferCreationAttributes<UserType>> {
-//   declare id: CreationOptional<number>;
-//   declare first_name: String;
-//   declare last_name: String;
-//   declare email: String;
-//   declare 
-// }
+  // associations
+  declare address?: NonAttribute<Address>;
+  declare vehicles?: NonAttribute<Vehicle[]>;
+  declare static associations: {
+    address: Association<User, Address>;
+    vehicles: Association<User, Vehicle>;
+  }
 
-interface UserAttributes {
-  email: string,
-  first_name: string,
-  last_name: string,
-  dob: string
+  public static associate(models: Models): void {
+    console.log("UserModel associate logic running in hurr");
+
+    User.hasOne(models.Address, {
+      as: "address",
+      foreignKey: "user_id"
+    });  
+
+    User.hasMany(models.Vehicle, {
+      as: "vehicles",
+      foreignKey: "user_id"
+    });
+
+    User.addScope(UserScopes.BySessionID, (sessionID: string) => ({
+      where: {
+        session_id: sessionID
+      }
+    }));
+
+    User.addScope(UserScopes.AllModels, {
+      include: [
+        {
+          model: models.Address,
+          as: "address"
+        },
+        {
+          model: models.Vehicle,
+          as: "vehicles"
+        }
+      ]
+    });
+
+    return;
+  }
 };
 
-type UserCreationAttributes = Optional<UserAttributes, 'first_name' | 'last_name' | 'dob'>
-
-const User: ModelDefined<UserAttributes, UserCreationAttributes> = sequelize.define('Users', {
-  email: {
-    type: DataTypes.STRING
+User.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    email: {
+      type: DataTypes.STRING
+    },
+    first_name: {
+      type: DataTypes.STRING,
+    },
+    last_name: {
+      type: DataTypes.STRING
+    },
+    dob: {
+      type: DataTypes.DATE
+    },
+    session_id: {
+      type: DataTypes.STRING,
+      unique: true
+    }
   },
-  first_name: {
-    type: DataTypes.STRING,
-  },
-  last_name: {
-    type: DataTypes.STRING
-  },
-  dob: {
-    type: DataTypes.DATE
+  {
+    tableName: 'users',
+    sequelize
   }
-}, 
-{});
+)
 
-User.
+const UserScopes = {
+  BySessionID: "sessionID",
+  AllModels: "allModels"
+}
 
-export default User;
+export {
+  User,
+  UserScopes
+};
