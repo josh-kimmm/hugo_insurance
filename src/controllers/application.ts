@@ -8,8 +8,6 @@ import { Vehicle } from "../db/models/vehicle";
 
 import currentStep from "../utils/currentStep";
 
-const { STEP_ORDER } = require("config");
-
 const resume = async (
   req: Request<{}, {}, { sessionID: string }>, 
   res: Response<IApplicationResponse>

@@ -1,9 +1,6 @@
-import db from "../db";
 import { Vehicle } from "../db/models/vehicle";
 import { User } from "../db/models/user";
 import { IError } from "../types/error";
-
-const { models } = db;
 
 interface DAO_VehicleType {
   updateVehicles(user: User, payload: Vehicle[]) : Promise<UpdateVehicleRetType | null>;

@@ -1,4 +1,3 @@
-import path from "path";
 import { User, UserScopes } from "./user";
 import { Address } from "./address";
 import { Vehicle } from "./vehicle";

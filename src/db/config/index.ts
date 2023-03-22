@@ -1,6 +1,7 @@
 import { Sequelize, Model } from "sequelize";
+const { DB_NAME, DB_PASSWORD } = require("config");
 
-const sequelize = new Sequelize("hugo_insurance", "postgres", "asdQWE1!", {
+const sequelize = new Sequelize(DB_NAME, "postgres", DB_PASSWORD, {
   host: "127.0.0.1",
   port: 5432,
   dialect: "postgres",
