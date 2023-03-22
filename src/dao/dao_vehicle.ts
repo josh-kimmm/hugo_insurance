@@ -1,11 +1,12 @@
 import db from "../db";
 import { Vehicle } from "../db/models/vehicle";
+import { User } from "../db/models/user";
 import { IError } from "../types/error";
 
 const { models } = db;
 
 interface DAO_VehicleType {
-  updateVehicles(userVehicles: Vehicle[] | undefined, payload: Vehicle[]) : Promise<{ error: string, updatedVehicles: Vehicle[]} | null>;
+  updateVehicles(user: User, payload: Vehicle[]) : Promise<UpdateVehicleRetType | null>;
 };
 
 interface UpdateVehicleRetType extends IError {
@@ -13,25 +14,24 @@ interface UpdateVehicleRetType extends IError {
 };
 
 const DAO_Vehicle: DAO_VehicleType = {
-  updateVehicles: async (userVehicles, payload) => {
+  updateVehicles: async (user, payload) => {
     const vehicleUpdates: UpdateVehicleRetType = {
       error: "",
       updatedVehicles: [],
     }
 
-    if(!payload || payload.length === 0)
+    if(!user || !payload || payload.length === 0)
       return vehicleUpdates;
-
-    if(!userVehicles || userVehicles.length === 0)
-      return vehicleUpdates
     
     for await (const updatedVehicle of payload) {
       const { id: payloadId } = updatedVehicle;
 
-      const currentVehicle = userVehicles.find(vehicle => payloadId === vehicle.id);
+      updatedVehicle.user_id = user.id;
+      const currentVehicle = user.vehicles?.find(vehicle => payloadId === vehicle.id);
       if(!currentVehicle){
-        vehicleUpdates.error = `Unable to update vehicle id: ${payloadId}`;
-        return vehicleUpdates;
+        const newVehicle = await Vehicle.create(updatedVehicle);
+        vehicleUpdates.updatedVehicles.push(newVehicle);
+        continue;
       }
 
       const newUpdate = await currentVehicle.update(updatedVehicle);

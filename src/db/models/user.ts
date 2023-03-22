@@ -33,7 +33,7 @@ class User extends
   declare static associations: {
     address: Association<User, Address>;
     vehicles: Association<User, Vehicle>;
-  }
+  };
 
   public static associate(models: Models): void {
     console.log("UserModel associate logic running in hurr");

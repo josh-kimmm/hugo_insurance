@@ -21,19 +21,19 @@ class Address extends
   >
 {
   declare id: CreationOptional<number>;
-  declare street: string;
+  declare street: CreationOptional<string>;
   declare city: CreationOptional<string>;
   declare state: CreationOptional<string>;
-  declare zip: CreationOptional<string>;
+  declare zip: CreationOptional<number>;
   declare user_id: ForeignKey<User['id']>
 
-  // associations
+  // associations 
 
   public static associate(models: Models): void {
     console.log("AddressModel associate logic running in hurr");
 
     Address.belongsTo(models.User, {
-      foreignKey: "user_id"
+      foreignKey: "user_id",
     });
 
     return;
@@ -57,13 +57,17 @@ Address.init(
       type: DataTypes.STRING
     },
     zip: {
-      type: DataTypes.STRING
+      type: DataTypes.INTEGER
+    },
+    user_id: {
+      type: DataTypes.INTEGER,
+      unique: true
     }
   },
   {
     tableName: 'addresses',
     sequelize
   }
-)
+);
 
 export { Address };

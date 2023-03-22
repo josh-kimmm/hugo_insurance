@@ -6,8 +6,8 @@ const { models, UserScopes } = db;
 const { BySessionID, AllModels } = UserScopes;
 
 interface DAO_UserType {
-  findBySessionId(sessionID: string) : Promise<User | null>;
-  updateUser(user: User, userPayload: User) : Promise<User | null>;
+  findBySessionId(sessionID: string) : Promise<InstanceType<typeof User> | null>;
+  updateUser(user: User, userPayload: User) : Promise<InstanceType<typeof User> | null>;
 }
 const DAO_User: DAO_UserType = {
   findBySessionId: async (sessionId) => {

@@ -10,16 +10,14 @@ interface Models {
   User: typeof User;
   Address: typeof Address;
   Vehicle: typeof Vehicle;
-}
+};
 const models: Models = {
   User,
   Address,
   Vehicle
-}
+};
 
 const init = async () => {
-  const basename = path.basename(__filename);
-  
   Object.keys(models).forEach((modelName) => {
     const model = models[modelName];
     if (model.associate) {

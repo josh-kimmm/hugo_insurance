@@ -21,7 +21,7 @@ class Vehicle extends
   >
 {
   declare id: CreationOptional<number>;
-  declare vin: string;
+  declare vin: string; 
   declare year: CreationOptional<string>;
   declare make: CreationOptional<string>;
   declare model: CreationOptional<string>;
@@ -44,20 +44,21 @@ Vehicle.init(
   {
     id: {
       type: DataTypes.INTEGER,
+      autoIncrement: true,
       primaryKey: true,
     },
     vin: {
       type: DataTypes.STRING
     },
     year: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
     },
     make: {
       type: DataTypes.STRING
     },
     model: {
-      type: DataTypes.DATE
-    }
+      type: DataTypes.STRING
+    },
   },
   {
     tableName: 'vehicles',

@@ -1,42 +1,71 @@
 import { Request, Response } from "express";
+import { IApplicationResponse } from "../types/routes";
+
 import { DAO_User, DAO_Address, DAO_Vehicle } from "../dao";
 import { User } from "../db/models/user";
 import { Address } from "../db/models/address";
 import { Vehicle } from "../db/models/vehicle";
 
-const resume = async (req: Request, res: Response) => {
+import currentStep from "../utils/currentStep";
+
+const { STEP_ORDER } = require("config");
+
+const resume = async (
+  req: Request<{}, {}, { sessionID: string }>, 
+  res: Response<IApplicationResponse>
+) => {
   const { sessionID } = req;
-
-  const user = await DAO_User.findBySessionId(sessionID);
-
-  if(!user){
-    res.status(400).json({ error: `Unable to find User with sessionID: ${sessionID}`});
-    return;
-  }
-
-  res.json({ user: user });
-};
-
-interface UpdateApplicationPayload {
-  userPayload: User;
-  vehiclePayload: Vehicle[];
-  addressPayload: Address;
-};
-
-const update = async (req: Request<{}, {}, UpdateApplicationPayload>, res: Response) => {
-  const { sessionID, body } = req;
-  const { userPayload, vehiclePayload, addressPayload } = body;
 
   const user = await DAO_User.findBySessionId(sessionID);
 
   if(!user)
     return res.status(400).json({ error: `Unable to find User with sessionID: ${sessionID}`});
 
-  const userUpdates = await DAO_User.updateUser(user, userPayload);
-  const addressUpdates = await DAO_Address.updateAddress(user.address, addressPayload);
-  const vehicleUpdates = await DAO_Vehicle.updateVehicles(user.vehicles, vehiclePayload);
+  const { address, vehicles } = user;
+  return res.json({
+    user,
+    address,
+    vehicles,
+    currentStep: currentStep(user)
+  })
 
-  return res.json({ userUpdates, addressUpdates, vehicleUpdates });
+};
+
+interface UpdateApplicationPayload {
+  user: User;
+  vehicles: Vehicle[];
+  address: Address;
+};
+
+const update = async (req: Request<{}, {}, UpdateApplicationPayload>, res: Response<IApplicationResponse>) => {
+  const { sessionID, body } = req;
+  const { user: userPayload, vehicles: vehiclePayload, address: addressPayload } = body;
+
+  const user = await DAO_User.findBySessionId(sessionID);
+
+  if(!user)
+    return res.status(400).json({ error: `Unable to find User with sessionID: ${sessionID}`});
+
+  let userUpdates;
+  if(userPayload)
+    userUpdates = await DAO_User.updateUser(user, userPayload);
+
+  let addressUpdates;
+  if(addressPayload){
+    addressPayload.user_id = user.id;
+    addressUpdates = await DAO_Address.upsertAddress(addressPayload);
+  }
+  
+  let vehicleUpdates;
+  if(vehiclePayload){
+    vehicleUpdates = await DAO_Vehicle.updateVehicles(user, vehiclePayload);
+  }
+  
+  return res.json({ 
+    user: userUpdates, 
+    address: addressUpdates, 
+    vehicles: vehicleUpdates?.updatedVehicles 
+  });
 };
 
 const submit = async (req: Request, res: Response) => {

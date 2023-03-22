@@ -4,16 +4,19 @@ import { Address } from "../db/models/address";
 const { models } = db;
 
 interface DAO_AddressType {
-  updateAddress(currentAddress: Address | undefined, payload: Address) : Promise<Address | null>;
-};
+  upsertAddress(payload: Address) : Promise<Address | null>;
+}; 
 
 const DAO_Address: DAO_AddressType = {
-  updateAddress: async (currentAddress, payload) => {
-    if(!currentAddress)
+  upsertAddress: async (payload) => {
+    if(!payload)
       return null;
     
-    return await currentAddress.update(payload);
-  }
-};
+    const [addressUpdate] = await Address.upsert(payload, {
+      returning: true,
+    });
+    return addressUpdate;
+  } 
+}; 
 
 export default DAO_Address;
